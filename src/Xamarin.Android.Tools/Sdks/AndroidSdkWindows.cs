@@ -71,18 +71,19 @@ namespace Xamarin.Android.Tools
 					yield return RegistryEx.GetValueString (root, ANDROID_INSTALLER_PATH, ANDROID_INSTALLER_KEY, wow);
 
 			// Check some hardcoded paths for good measure
-			var xamarin_private = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData), "Xamarin", "MonoAndroid", "android-sdk-windows");
-			var android_default = Path.Combine (OS.ProgramFilesX86, "Android", "android-sdk-windows");
-			var cdrive_default = @"C:\android-sdk-windows";
-
-			if (ValidateAndroidSdkLocation (xamarin_private))
-				yield return xamarin_private;
-
-			if (ValidateAndroidSdkLocation (android_default))
-				yield return android_default;
-
-			if (ValidateAndroidSdkLocation (cdrive_default))
-				yield return cdrive_default;
+			var paths = new string [] {
+				Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData), "Xamarin", "MonoAndroid", "android-sdk-windows"),
+				Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk-windows"),
+				Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk"),
+				Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.ProgramFiles), "Android", "android-sdk"),
+				Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData), "Android", "android-sdk"),
+				Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.CommonApplicationData), "Android", "android-sdk"),
+				@"C:\android-sdk-windows"
+			};
+			foreach (var basePath in paths)
+				if (Directory.Exists (basePath))
+					if (ValidateAndroidSdkLocation (basePath))
+						yield return basePath;
 		}
 
 		protected override string GetJavaSdkPath ()
@@ -145,10 +146,12 @@ namespace Xamarin.Android.Tools
 
 			// Check some hardcoded paths for good measure
 			var xamarin_private = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData), "Xamarin", "MonoAndroid");
+			var vs_default = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.CommonApplicationData), "Microsoft", "AndroidNDK");
+			var vs_default32bit = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.CommonApplicationData), "Microsoft", "AndroidNDK32");
 			var android_default = Path.Combine (OS.ProgramFilesX86, "Android");
 			var cdrive_default = @"C:\";
 
-			foreach (var basePath in new string [] {xamarin_private, android_default, cdrive_default})
+			foreach (var basePath in new string [] {xamarin_private, android_default, vs_default, cdrive_default})
 				if (Directory.Exists (basePath))
 					foreach (var dir in Directory.GetDirectories (basePath, "android-ndk-r*"))
 						if (ValidateAndroidNdkLocation (dir))
